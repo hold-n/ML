@@ -5,9 +5,9 @@ import numpy as np
 
 
 def create_design_matrix(x, normalize=True):
-    '''
+    """
     Obsolete. Use sklearn.preprocessing
-    '''
+    """
     ones = pd.Series(1, index=np.arange(len(x)))
     new_x, means, widths = _normalize(x) if normalize else (x, 0, 1)
     means = np.insert(means, 0, 0)
@@ -19,9 +19,9 @@ def create_design_matrix(x, normalize=True):
 
 
 def denormalize_known(x, means, widths, index=None):
-    '''
+    """
     Obsolete. Use sklearn.preprocessing
-    '''
+    """
     if index is None:
         return widths * x + means
     return widths[index] * x + means[index]
@@ -63,12 +63,34 @@ def logistic_loss_gradient(theta, x, y, reg_param=0):
 
 
 def normalize_known(x, means, widths, index=None):
-    '''
+    """
     Obsolete. Use sklearn.preprocessing
-    '''
+    """
     if index is None:
         return (x - means) / widths
     return (x - means[index]) / widths[index]
+
+
+def run_descent(alpha, tolerance, theta_0, x, y, reg_param=0):
+    prev_loss = None
+    theta = None
+    progress = []
+    for current_theta, loss in gradient_descent(theta_0, x, y, alpha, reg_param):
+        progress.append(loss)
+        delta = (
+            0
+            if loss == 0
+            else tolerance
+            if prev_loss is None
+            else (prev_loss - loss) / loss
+        )
+        if delta < 0:
+            raise ValueError("Loss increases. Decrease the learning rate")
+        if delta < tolerance:
+            theta = current_theta
+            break
+        prev_loss = loss
+    return (progress, theta)
 
 
 def sigmoid(z):
@@ -76,9 +98,9 @@ def sigmoid(z):
 
 
 def _normalize(x):
-    '''
+    """
     Obsolete. Use sklearn.preprocessing
-    '''
+    """
     means = [x[c].mean() for c in x.columns]
     # TODO: consider width = 0
     widths = [np.ptp(x[c]) for c in x.columns]
