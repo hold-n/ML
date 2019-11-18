@@ -5,6 +5,9 @@ import numpy as np
 
 
 def create_design_matrix(x, normalize=True):
+    '''
+    Obsolete. Use sklearn.preprocessing
+    '''
     ones = pd.Series(1, index=np.arange(len(x)))
     new_x, means, widths = _normalize(x) if normalize else (x, 0, 1)
     means = np.insert(means, 0, 0)
@@ -16,15 +19,18 @@ def create_design_matrix(x, normalize=True):
 
 
 def denormalize_known(x, means, widths, index=None):
+    '''
+    Obsolete. Use sklearn.preprocessing
+    '''
     if index is None:
         return widths * x + means
     return widths[index] * x + means[index]
 
 
-def gradient_descent(theta, x, y, alpha):
-    gradient = lambda _theta: logistic_loss_gradient(_theta, x, y)
+def gradient_descent(theta, x, y, alpha, reg_param=0):
+    gradient = lambda _theta: logistic_loss_gradient(_theta, x, y, reg_param)
     for current_theta in iterate_theta(gradient, theta, alpha):
-        loss = logistic_loss(current_theta, x, y)
+        loss = logistic_loss(current_theta, x, y, reg_param)
         yield current_theta, loss
 
 
@@ -43,15 +49,23 @@ def logistic_hypothesis(x, theta):
     return sigmoid(np.dot(x, theta))
 
 
-def logistic_loss(theta, x, y):
-    return 1 / len(x) * logistic_cost(theta, x, y).sum()
+def logistic_loss(theta, x, y, reg_param=0):
+    cost_sum = logistic_cost(theta, x, y).sum()
+    reg_sum = reg_param / 2 * np.power(theta[1:], 2).sum()
+    return 1 / len(x) * (cost_sum + reg_sum)
 
 
-def logistic_loss_gradient(theta, x, y):
-    return (1 / len(x)) * np.dot(x.transpose(), logistic_hypothesis(x, theta) - y)
+def logistic_loss_gradient(theta, x, y, reg_param=0):
+    cost_sum = np.dot(x.transpose(), logistic_hypothesis(x, theta) - y)
+    reg_sum = np.multiply(reg_param, theta)
+    reg_sum[0] = 0
+    return 1 / len(x) * (cost_sum + reg_sum)
 
 
 def normalize_known(x, means, widths, index=None):
+    '''
+    Obsolete. Use sklearn.preprocessing
+    '''
     if index is None:
         return (x - means) / widths
     return (x - means[index]) / widths[index]
@@ -62,6 +76,9 @@ def sigmoid(z):
 
 
 def _normalize(x):
+    '''
+    Obsolete. Use sklearn.preprocessing
+    '''
     means = [x[c].mean() for c in x.columns]
     # TODO: consider width = 0
     widths = [np.ptp(x[c]) for c in x.columns]
