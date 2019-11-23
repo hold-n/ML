@@ -31,9 +31,8 @@ def backpropagate(thetas, x, y, reg_param):
         error = activations[-1] - yrow
         for layer in range(len(activations) - 2, -1, -1):
             deltas[layer][:, 0] += error
-            # TODO: rename
-            foo, bar = np.meshgrid(activations[layer], error)
-            deltas[layer][:, 1:] += foo * bar
+            a_j, error_i = np.meshgrid(activations[layer], error)
+            deltas[layer][:, 1:] += a_j * error_i
             error = np.dot(thetas[layer].T, error)[1:] * sigmoid_da(activations[layer])
     for d, theta in zip(deltas, thetas):
         result = 1 / len(x) * d
@@ -83,16 +82,20 @@ def run_stochastic_descent(alpha, epochs, thetas_0, x, y, reg_param, batch_size)
     for i in range(epochs):
         np.random.shuffle(indexes)
         for start in range(len(indexes) // batch_size):
-            batch_indexes = indexes[start:start+batch_size]
+            batch_indexes = indexes[
+                start * batch_size : start * batch_size + batch_size
+            ]
             x_batch = x.iloc[batch_indexes]
+            x_batch.reset_index(drop=True, inplace=True)
             y_batch = y.iloc[batch_indexes]
+            y_batch.reset_index(drop=True, inplace=True)
             # the first value is the one we provided
             v = islice(gradient_descent(thetas, x_batch, y_batch, alpha, reg_param), 2)
             cost = None
             for thetas, cost in v:
                 pass
             yield cost, thetas
-        print('Epoch {} completed'.format(i + 1))
+        print("Epoch {} completed".format(i + 1))
 
 
 def init_weights(levels, epsilon):
