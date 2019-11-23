@@ -33,12 +33,12 @@ def backpropagate(thetas, x, y, reg_param):
             deltas[layer][:, 0] += error
             a_j, error_i = np.meshgrid(activations[layer], error)
             deltas[layer][:, 1:] += a_j * error_i
+            # we compute error on the last iteration in vain
             error = np.dot(thetas[layer].T, error)[1:] * sigmoid_da(activations[layer])
     for d, theta in zip(deltas, thetas):
-        result = 1 / len(x) * d
         _, weight = np.hsplit(theta, [1])
-        result[:, 1:] += reg_param * weight
-        yield result
+        d[:, 1:] += reg_param * weight
+        yield 1 / len(x) * d
 
 
 def iterate_thetas(deltas_func, thetas, alpha):
@@ -55,6 +55,27 @@ def gradient_descent(thetas, x, y, alpha, reg_param):
         a = run_network(current_thetas, x)
         current_cost = network_cost(current_thetas, a, y, reg_param)
         yield current_thetas, current_cost
+
+
+def gradient_approx(thetas, x, y, reg_param, epsilon, layers, rows, columns):
+    result = [np.zeros(theta.shape) for theta in thetas]
+    for layer in layers:
+        theta = thetas[layer]
+        for i in rows:
+            for j in columns:
+                original = theta[i, j]
+
+                theta[i, j] = original + epsilon
+                a = run_network(thetas, x)
+                top = network_cost(thetas, a, y, reg_param)
+
+                theta[i, j] = original - epsilon
+                a = run_network(thetas, x)
+                bottom = network_cost(thetas, a, y, reg_param)
+
+                theta[i, j] = original
+                result[layer][i, j] = (top - bottom) / 2 / epsilon
+    return result
 
 
 def run_descent(alpha, tolerance, thetas_0, x, y, reg_param):
@@ -114,11 +135,11 @@ def log_loss(prediction, y):
     return -result.sum().sum()
 
 
-def run_network(thetas, x):
+def run_network(thetas, x, layer=-1):
     # NOTE: assuming x is a dataframe
     result = []
     for row in x.itertuples(index=False):
-        result.append(forward_propagate(thetas, row)[-1])
+        result.append(forward_propagate(thetas, row)[layer])
     return pd.DataFrame(result)
 
 
