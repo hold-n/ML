@@ -1,3 +1,7 @@
+Every lab has reports in the `.html` files. They are exported Jupyter notebooks and can save you the trouble of setting up the environment.
+
+The main logic is inside `.py` files. Jupyter notebooks contain the presentation stuff.
+
 ### Problem topics
 
 1. Linear regression
