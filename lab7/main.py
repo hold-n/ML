@@ -10,9 +10,10 @@ def cov_matrix(x, is_scaled):
 def pca(x, k, is_scaled=True):
     c = cov_matrix(x, is_scaled)
     # TODO: implement selection of k
-    u, _, _ = np.linalg.svd(c)
+    u, s, _ = np.linalg.svd(c)
     uk = u[:, :k]
-    return (x @ uk), uk.T
+    var = s[:k].sum() / s.sum()
+    return (x @ uk), uk.T, var
 
 
 def pca_inverse(x, uk):
