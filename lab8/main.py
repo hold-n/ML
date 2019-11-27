@@ -24,6 +24,8 @@ def gaussian_params(x):
 
 
 def precision(prediction, actual):
+    if len(prediction) != len(actual):
+        raise ValueError('Inputs must be of the same size')
     positive = actual[actual == 1]
     positive_prediction = prediction[positive.index]
     return positive_prediction.sum() / prediction.sum()
@@ -39,6 +41,8 @@ def probability(x, mean, variance):
 
 
 def recall(prediction, actual):
+    if len(prediction) != len(actual):
+        raise ValueError('Inputs must be of the same size')
     positive = actual[actual == 1]
     positive_prediction = prediction[positive.index]
     return positive_prediction.sum() / actual.sum()
