@@ -3,7 +3,11 @@ import pandas as pd
 
 
 def choose_threshold(x, mean, variance, y, epsilon):
-    return max(epsilon, key=lambda e: f1_score(predict(x, mean, variance, e), y))
+    scores = [f1_score(predict(x, mean, variance, e), y) for e in epsilon]
+    if not has_maximum(scores):
+        raise ValueError("The provided range does not contain the optimal value.")
+    index, _ = max(enumerate(scores), key=lambda t: t[1])
+    return epsilon[index]
 
 
 def f1_score(prediction, actual):
@@ -23,9 +27,13 @@ def gaussian_params(x):
     return np.array(mean), np.array(variance)
 
 
+def has_maximum(seq):
+    return seq[0] < max(seq) > seq[-1]
+
+
 def precision(prediction, actual):
     if len(prediction) != len(actual):
-        raise ValueError('Inputs must be of the same size')
+        raise ValueError("Inputs must be of the same size")
     positive = actual[actual == 1]
     positive_prediction = prediction[positive.index]
     return positive_prediction.sum() / prediction.sum()
@@ -42,7 +50,7 @@ def probability(x, mean, variance):
 
 def recall(prediction, actual):
     if len(prediction) != len(actual):
-        raise ValueError('Inputs must be of the same size')
+        raise ValueError("Inputs must be of the same size")
     positive = actual[actual == 1]
     positive_prediction = prediction[positive.index]
     return positive_prediction.sum() / actual.sum()
